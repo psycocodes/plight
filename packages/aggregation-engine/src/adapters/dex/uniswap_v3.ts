@@ -11,6 +11,7 @@ import { DexSignal, saturateCount, deriveHad } from '../../types';
 import { ethers } from 'ethers';
 import { getProtocolAddress } from '../../protocol_matrix';
 import { logAddressResolution, logEventFetch, logCountDerivation, logRpcCall, logRpcResponse } from '../../logger';
+import { fetchLogsWithChunking } from '../../utils/eth_client';
 
 const UNISWAP_V3_SWAP_ABI = [
   'event Swap(address indexed sender, address indexed recipient, int256 amount0, int256 amount1, uint160 sqrtPriceX96, uint128 liquidity, int24 tick)',
@@ -29,77 +30,63 @@ export async function runUniswapV3Adapter(
   }
 
   const contractInterface = new ethers.Interface(UNISWAP_V3_SWAP_ABI);
-  const factoryAddress = getProtocolAddress('uniswap_v3', 'dex', chainId, 'factory');
-  logAddressResolution('uniswap_v3', 'factory', factoryAddress);
-
+  // Note: Factory address is used to resolve, but events happen on Pools (which are dynamic).
+  // However, we can't filter by address easily for ALL pools.
+  // We MUST rely on topic filtering globally (without address param) or tracked pools.
+  // Given we are simulating an "Indexer" via RPC, global topic scan is the only way 
+  // without a subgraph. But global topic scan is expensive on some RPCs.
+  // The only constrained way is to filter by TOPIC which matches the USER.
+  
   const normalizedSubject = subject.toLowerCase();
+  const paddedSubject = ethers.zeroPadValue(subject, 32);
+
   const swapTopic = contractInterface.getEvent('Swap')!.topicHash;
   const mintTopic = contractInterface.getEvent('Mint')!.topicHash;
 
-  const rpcParams = [{
-    topics: [[swapTopic, mintTopic]],
-    fromBlock: `0x${startBlock.toString(16)}`,
-    toBlock: `0x${endBlock.toString(16)}`,
-  }];
 
-  logRpcCall('eth_getLogs', rpcParams);
 
-  const response = await fetch(rpcUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      jsonrpc: '2.0',
-      id: 1,
-      method: 'eth_getLogs',
-      params: rpcParams,
-    }),
-  });
+  // Request 1: Swap (where sender = subject) - indexed param 1 (topic 1)
+  // Swap(sender, recipient, ...)
+  const swapSenderPromise = fetchLogsWithChunking(
+      rpcUrl,
+      undefined, // No address (Global scan!) - Check if eth_client handles undefined address correctly (it does, json stringify drops undefined or we pass null?) -> need to check logic
+      [swapTopic, paddedSubject], 
+      startBlock,
+      endBlock,
+      2000
+  );
 
-  const result = await response.json();
-  logRpcResponse('eth_getLogs', result, true);
-  
-  if (result.error) {
-    throw new Error(`RPC error: ${result.error.message}`);
-  }
+  // Request 2: Swap (where recipient = subject) - indexed param 2 (topic 2)
+  const swapRecipientPromise = fetchLogsWithChunking(
+      rpcUrl,
+      undefined,
+      [swapTopic, null, paddedSubject], 
+      startBlock,
+      endBlock,
+      2000
+  );
 
-  const logs = result.result || [];
+  // Request 3: Mint (where owner = subject) - indexed param 2 (topic 2) - Wait, Mint(sender, owner, ...)
+  // sender is topic 1?? No, ABI: Mint(address sender, address indexed owner, ...)
+  // sender is unindexed (data). owner is indexed (topic 1).
+  // So: [mintTopic, paddedSubject]
+  const mintPromise = fetchLogsWithChunking(
+      rpcUrl,
+      undefined,
+      [mintTopic, paddedSubject], 
+      startBlock,
+      endBlock,
+      2000
+  );
 
-  let swapCount = 0;
-  let liquidityAddCount = 0;
+  const [swapSenderLogs, swapRecipientLogs, mintLogs] = await Promise.all([
+      swapSenderPromise, swapRecipientPromise, mintPromise
+  ]);
 
-  for (const log of logs) {
-    try {
-      const parsed = contractInterface.parseLog({
-        topics: log.topics,
-        data: log.data,
-      });
+  const swapCount = saturateCount(swapSenderLogs.length + swapRecipientLogs.length);
+  const liquidityAddCount = saturateCount(mintLogs.length);
 
-      if (!parsed || !parsed.args) continue;
-
-      const eventName = parsed.name;
-
-      if (eventName === 'Swap') {
-        const sender = parsed.args.sender?.toLowerCase();
-        const recipient = parsed.args.recipient?.toLowerCase();
-
-        if (sender === normalizedSubject || recipient === normalizedSubject) {
-          swapCount++;
-        }
-      } else if (eventName === 'Mint') {
-        const owner = parsed.args.owner?.toLowerCase();
-        if (owner === normalizedSubject) {
-          liquidityAddCount++;
-        }
-      }
-    } catch {
-      continue;
-    }
-  }
-
-  logEventFetch('uniswap_v3', 'Swap/Mint', logs.length, swapCount + liquidityAddCount);
-
-  swapCount = saturateCount(swapCount);
-  liquidityAddCount = saturateCount(liquidityAddCount);
+  logEventFetch('uniswap_v3', 'Swap/Mint', swapSenderLogs.length + swapRecipientLogs.length + mintLogs.length, swapCount + liquidityAddCount);
 
   logCountDerivation('dex', { swap_count: swapCount, liquidity_add_count: liquidityAddCount });
 

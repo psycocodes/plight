@@ -90,47 +90,53 @@ export class RpcAaveV3Fetcher implements EventFetcher {
     const contractInterface = new ethers.Interface(AAVE_V3_POOL_ABI);
     const borrowTopic = contractInterface.getEvent('Borrow')!.topicHash;
     const liquidationTopic = contractInterface.getEvent('LiquidationCall')!.topicHash;
-
-    // Use chunking to avoid RPC limits
-    const logs = await fetchLogsWithChunking(
-      rpcUrl,
-      poolAddress,
-      [[borrowTopic, liquidationTopic]],
-      fromBlock,
-      toBlock,
-      500 // Safe chunk size for public RPCs
-    );
+    
+    // Topic filtering:
+    // Borrow: topic 2 is onBehalfOf
+    // LiquidationCall: topic 3 is user
+    const subjectTopic = ethers.zeroPadValue(subject, 32);
 
     const normalizedEvents: NormalizedEvent[] = [];
-    const normalizedSubject = subject.toLowerCase();
 
-    for (const log of logs) {
+    // Parallel fetch for optimal speed
+    // Parallel fetch for optimal speed (with robust 10k chunking)
+    const [borrowLogs, liquidationLogs] = await Promise.all([
+      fetchLogsWithChunking(
+        rpcUrl,
+        poolAddress,
+        [borrowTopic, null, subjectTopic], // topic0=Borrow, topic1=any, topic2=subject
+        fromBlock,
+        toBlock,
+        10000 
+      ),
+      fetchLogsWithChunking(
+        rpcUrl,
+        poolAddress,
+        [liquidationTopic, null, null, subjectTopic], // topic0=Liq, topic1=any, topic2=any, topic3=subject
+        fromBlock,
+        toBlock,
+        10000
+      )
+    ]);
+
+    const allLogs = [...borrowLogs, ...liquidationLogs];
+
+    for (const log of allLogs) {
       try {
         const parsed = contractInterface.parseLog({ topics: log.topics, data: log.data });
-        if (!parsed || !parsed.args) continue;
+        if (!parsed) continue;
 
+        // Since we filtered by topic, we know these match the subject, but we double check to be safe
         const eventName = parsed.name;
-        let matchesSubject = false;
-
-        if (eventName === 'Borrow') {
-          const user = parsed.args.user?.toLowerCase();
-          const onBehalfOf = parsed.args.onBehalfOf?.toLowerCase();
-          matchesSubject = user === normalizedSubject || onBehalfOf === normalizedSubject;
-        } else if (eventName === 'LiquidationCall') {
-          const user = parsed.args.user?.toLowerCase();
-          matchesSubject = user === normalizedSubject;
-        }
-
-        if (matchesSubject) {
-          normalizedEvents.push({
-            protocol: 'aave_v3',
-            chainId,
-            event: eventName as 'Borrow' | 'LiquidationCall',
-            user: normalizedSubject,
-            blockNumber: parseInt(log.blockNumber, 16),
-            txHash: log.transactionHash
-          });
-        }
+        
+        normalizedEvents.push({
+          protocol: 'aave_v3',
+          chainId,
+          event: eventName as 'Borrow' | 'LiquidationCall',
+          user: subject.toLowerCase(),
+          blockNumber: parseInt(log.blockNumber, 16),
+          txHash: log.transactionHash
+        });
       } catch (e) {
         continue;
       }

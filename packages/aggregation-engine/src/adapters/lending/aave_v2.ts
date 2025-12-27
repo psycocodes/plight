@@ -41,20 +41,36 @@ export async function runAaveV2Adapter(
 
   // Normalize subject address to lowercase for comparison
   const normalizedSubject = subject.toLowerCase();
+  const paddedSubject = ethers.zeroPadValue(subject, 32);
 
   // Get event topics
   const borrowTopic = contractInterface.getEvent('Borrow')!.topicHash;
   const liquidationTopic = contractInterface.getEvent('LiquidationCall')!.topicHash;
 
-  // Use chunking to avoid RPC limits
-  const logs = await fetchLogsWithChunking(
+  // OPTIMIZATION: Filter by topic directly to avoid fetching all protocol logs
+  // 1. Borrow: topic2 is onBehalfOf (indexed)
+  // 2. LiquidationCall: topic3 is user (indexed)
+
+  const borrowPromise = fetchLogsWithChunking(
     rpcUrl,
     lendingPoolAddress,
-    [[borrowTopic, liquidationTopic]],
+    [borrowTopic, null, paddedSubject],
     startBlock,
     endBlock,
-    1000 // Safe chunk size for public RPCs
+    2000
   );
+
+  const liquidationPromise = fetchLogsWithChunking(
+    rpcUrl,
+    lendingPoolAddress,
+    [liquidationTopic, null, null, paddedSubject],
+    startBlock,
+    endBlock,
+    2000
+  );
+
+  const [borrowLogs, liquidationLogs] = await Promise.all([borrowPromise, liquidationPromise]);
+  const logs = [...borrowLogs, ...liquidationLogs];
 
   // Parse and categorize events
   let borrowCount = 0;
@@ -69,30 +85,21 @@ export async function runAaveV2Adapter(
 
       if (!parsed || !parsed.args) continue;
 
-      const blockNumber = parseInt(log.blockNumber, 16);
       const eventName = parsed.name;
 
-      // Check if event involves subject
-      let matchesSubject = false;
-
+      // Double check if event involves subject (paranoia check)
       if (eventName === 'Borrow') {
-        const user = parsed.args.user?.toLowerCase();
         const onBehalfOf = parsed.args.onBehalfOf?.toLowerCase();
-        matchesSubject = user === normalizedSubject || onBehalfOf === normalizedSubject;
-        
-        if (matchesSubject) {
+        if (onBehalfOf === normalizedSubject) {
           borrowCount++;
         }
       } else if (eventName === 'LiquidationCall') {
         const user = parsed.args.user?.toLowerCase();
-        matchesSubject = user === normalizedSubject;
-        
-        if (matchesSubject) {
+        if (user === normalizedSubject) {
           liquidationCount++;
         }
       }
     } catch {
-      // Skip unparseable logs
       continue;
     }
   }

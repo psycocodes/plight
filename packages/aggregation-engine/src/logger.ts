@@ -14,10 +14,24 @@ export function isVerboseAll(): boolean {
   return verboseLevel === 'all';
 }
 
+// Log Listener Support
+export type LogListener = (message: string) => void;
+const listeners: LogListener[] = [];
+
+export function addLogListener(listener: LogListener): void {
+  listeners.push(listener);
+}
+
 // Base logging function
 function log(message: string): void {
   if (verboseLevel !== 'none') {
-    console.log(message);
+    // If listeners exist, send to them instead of console (or both, depending on design)
+    // For TUI, we want to capture them.
+    if (listeners.length > 0) {
+      listeners.forEach(l => l(message));
+    } else {
+      console.log(message);
+    }
   }
 }
 

@@ -1,0 +1,18 @@
+
+curl https://mainnet.infura.io/v3/23183b58568940d1bdd3cdc471618d73 \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "eth_getLogs",
+    "params": [{
+      "address": "0xc3d688B66703497DAA19211EEdff47f25384cdc3",
+      "fromBlock": "0x16C55AF",
+      "toBlock": "0x16FA1AB",
+      "topics": [
+        "0x9b1bfa7fa9ee420a16e124f794c35ac9f90472acc99140eb2f6447c714cad8eb",
+        "0x000000000000000000000000b9e62cb9b4ce8ec13c886fae67369da417ee2714"
+      ]
+    }]
+  }'

@@ -23,8 +23,9 @@ export function validateAndSerializeOutput(output: AggregationOutput): string {
   const schema = JSON.parse(schemaContent);
 
   // Validate schema version matches what's in the schema file
-  if (output.schema_version !== schema.schema_version) {
-    throw new Error(`Schema version mismatch: output has ${output.schema_version}, expected ${schema.schema_version}`);
+  const expectedVersion = schema.properties.schema_version.const;
+  if (output.schema_version !== expectedVersion) {
+    throw new Error(`Schema version mismatch: output has ${output.schema_version}, expected ${expectedVersion}`);
   }
 
   const validate = ajv.compile(schema);

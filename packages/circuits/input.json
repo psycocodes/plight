@@ -1,0 +1,12 @@
+{
+  "attestationHash": "123456789",
+  "expiresAt": "1900000000",
+  "policyId": "101",
+  "notaryKeyAx": "11111",
+  "notaryKeyAy": "22222",
+  "userAddress": "649636694704047133789136350755385286168421912431",
+  "liquidationCount": "0",
+  "sigR8x": "33333",
+  "sigR8y": "44444",
+  "sigS": "55555"
+}

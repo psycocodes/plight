@@ -1,0 +1,29 @@
+{
+  "name": "oracle",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "start": "ts-node src/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@types/node": "^22.19.3",
+    "@types/react": "^17.0.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "aggregation-engine": "*",
+    "chalk": "^4.1.2",
+    "dotenv": "^16.0.3",
+    "ink": "^3.2.0",
+    "ink-progress-bar": "^3.0.0",
+    "react": "^17.0.2"
+  }
+}

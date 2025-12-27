@@ -11,6 +11,8 @@
 import { LendingSignal, saturateCount, deriveHad } from '../../types';
 import { getProtocolAddress } from '../../protocol_matrix';
 import { logAddressResolution, logEventFetch, logCountDerivation, logRpcCall, logRpcResponse } from '../../logger';
+import { ethers } from 'ethers';
+import { fetchLogsWithChunking } from '../../utils/eth_client';
 
 // Compound v3 events (simplified - using Supply/Withdraw as proxies)
 const COMPOUND_V3_ABI = [
@@ -34,63 +36,52 @@ export async function runCompoundV3Adapter(
   logAddressResolution('compound_v3', 'comet_usdc', cometAddress);
 
   const normalizedSubject = subject.toLowerCase();
+  const paddedSubject = ethers.zeroPadValue(subject, 32);
 
-  // For simplicity, we'll track AbsorbDebt as liquidations
-  // Supply/Withdraw would require more complex logic to determine borrows vs deposits
-  const rpcParams = [{
-    address: cometAddress,
-    topics: ['0x6d9f5d4c7a5e7c5d4c7a5e7c5d4c7a5e7c5d4c7a5e7c5d4c7a5e7c5d4c7a5e7c'], // AbsorbDebt topic
-    fromBlock: `0x${startBlock.toString(16)}`,
-    toBlock: `0x${endBlock.toString(16)}`,
-  }];
+  // Topics
+  // AbsorbDebt(absorber, borrower, ...)
+  const absorbTopic = '0x6d9f5d4c7a5e7c5d4c7a5e7c5d4c7a5e7c5d4c7a5e7c5d4c7a5e7c5d4c7a5e7c';
+  // Withdraw(src, to, amount)
+  const withdrawTopic = '0x9b1bfa7fa9ee420a16e124f794c35ac9f90472acc99140eb2f6447c714cad8eb';
 
-  logRpcCall('eth_getLogs', rpcParams);
+  // Request 1: Liquidations (AbsorbDebt where borrower = subject)
+  // borrower is topic 2
+  // Request 1: Liquidations (AbsorbDebt where borrower = subject)
+  // borrower is topic 2
+  const liquidationLogs = await fetchLogsWithChunking(
+    rpcUrl,
+    cometAddress,
+    [absorbTopic, null, paddedSubject],
+    startBlock,
+    endBlock,
+    10000 // Using 10000 as a safe default
+  );
 
-  const response = await fetch(rpcUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      jsonrpc: '2.0',
-      id: 1,
-      method: 'eth_getLogs',
-      params: rpcParams,
-    }),
-  });
+  // Request 2: Borrows (Withdraw where src = subject)
+  // src is topic 1
+  const borrowLogs = await fetchLogsWithChunking(
+      rpcUrl,
+      cometAddress,
+      [withdrawTopic, paddedSubject],
+      startBlock,
+      endBlock,
+      10000
+  );
 
-  const result = await response.json();
-  logRpcResponse('eth_getLogs', result, true);
-  
-  if (result.error) {
-    throw new Error(`RPC error: ${result.error.message}`);
-  }
+  const liquidationCount = saturateCount(liquidationLogs.length);
+  const borrowCount = saturateCount(borrowLogs.length); // Count raw events
 
-  const logs = result.result || [];
-
-  let liquidationCount = 0;
-
-  for (const log of logs) {
-    try {
-      const borrower = '0x' + log.topics[2]?.slice(26);
-      if (borrower?.toLowerCase() === normalizedSubject) {
-        liquidationCount++;
-      }
-    } catch {
-      continue;
-    }
-  }
-
-  logEventFetch('compound_v3', 'AbsorbDebt', logs.length, liquidationCount);
-
-  liquidationCount = saturateCount(liquidationCount);
+  // Log event fetch results
+  logEventFetch('compound_v3', 'AbsorbDebt/Withdraw', liquidationLogs.length + borrowLogs.length, liquidationCount + borrowCount);
 
   logCountDerivation('lending', {
-    borrow_count: 0, // Not tracked in this simplified version
+    borrow_count: borrowCount,
     liquidation_count: liquidationCount,
   });
 
   return {
-    had_borrow: false,
-    borrow_count: 0,
+    had_borrow: deriveHad(borrowCount),
+    borrow_count: borrowCount,
     
     had_liquidation: deriveHad(liquidationCount),
     liquidation_count: liquidationCount,

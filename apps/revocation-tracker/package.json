@@ -1,0 +1,21 @@
+{
+    "name": "revocation-tracker",
+    "version": "1.0.0",
+    "main": "dist/index.js",
+    "scripts": {
+        "build": "tsc",
+        "start": "node dist/index.js",
+        "dev": "ts-node src/index.ts"
+    },
+    "dependencies": {
+        "aggregation-engine": "*",
+        "dotenv": "^16.4.5",
+        "ethers": "^6.10.0",
+        "fast-json-stable-stringify": "^2.1.0"
+    },
+    "devDependencies": {
+        "@types/node": "^20.11.0",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.3.3"
+    }
+}

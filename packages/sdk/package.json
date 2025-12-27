@@ -1,0 +1,23 @@
+{
+  "name": "@plight/sdk",
+  "version": "0.1.0",
+  "description": "Browser-only SDK for Plight eligibility checks",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "snarkjs": "^0.7.0",
+    "circomlibjs": "^0.1.7",
+    "ethers": "^6.11.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

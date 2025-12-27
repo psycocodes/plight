@@ -205,7 +205,7 @@ export async function aggregate(
     signals,
     invariants,
     commitment: {
-      nullifier: '0xNULLIFIER',
+      nullifier: '0x0000000000000000000000000000000000000000000000000000000000000000',
       issued_at_block: endBlock + 1,
     },
   };
