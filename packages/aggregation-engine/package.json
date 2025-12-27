@@ -1,0 +1,23 @@
+{
+    "name": "aggregation-engine",
+    "version": "1.0.0",
+    "description": "Shared aggregation logic for Plight",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc",
+        "check-types": "tsc --noEmit"
+    },
+    "dependencies": {
+        "ethers": "^6.16.0",
+        "ajv": "^6.12.6",
+        "fast-json-stable-stringify": "^2.1.0",
+        "chalk": "^4.1.2"
+    },
+    "devDependencies": {
+        "typescript": "^5.9.2",
+        "@types/node": "^22.19.3",
+        "@types/json-stable-stringify": "^1.1.0"
+    },
+    "type": "commonjs"
+}

@@ -1,0 +1,215 @@
+{
+    "$schema": "./contracts.schema.json",
+    "version": "1.0.0",
+    "lastUpdated": "2024-12-26",
+    "protocols": {
+        "aave_v3": {
+            "lending": {
+                "1": {
+                    "pool": "0x87870bcA3f5F3Fd899eAbfde76e599f6fA380fa2",
+                    "source": "https://docs.aave.com/developers/deployed-contracts/v3-mainnet",
+                    "verified": "https://etherscan.io/address/0x87870bcA3f5F3Fd899eAbfde76e599f6fA380fa2"
+                },
+                "10": {
+                    "pool": "0x794a61358d6845594f94dc1db02a252b5b4814ad",
+                    "source": "https://docs.aave.com/developers/deployed-contracts/v3-mainnet",
+                    "verified": "https://optimistic.etherscan.io/address/0x794A61353D94b5eA37a5Fa08d2bB5b4814AD3e0e"
+                },
+                "137": {
+                    "pool": "0x794a61358d6845594f94dc1db02a252b5b4814ad",
+                    "source": "https://docs.aave.com/developers/deployed-contracts/v3-mainnet",
+                    "verified": "https://polygonscan.com/address/0x794A61353D94b5eA37a5Fa08d2bB5b4814AD3e0e"
+                },
+                "8453": {
+                    "pool": "0xA238Dd80C259a72e81d7e4664a98015D83095205",
+                    "source": "https://docs.aave.com/developers/deployed-contracts/v3-mainnet",
+                    "verified": "https://basescan.org/address/0xa238dd80584b162f1a238F6174a7b7a93f98d1c5"
+                },
+                "42161": {
+                    "pool": "0x794a61358d6845594f94dc1db02a252b5b4814ad",
+                    "source": "https://docs.aave.com/developers/deployed-contracts/v3-mainnet",
+                    "verified": "https://arbiscan.io/address/0x794A61353D94b5eA37a5Fa08d2bB5b4814AD3e0e"
+                },
+                "43114": {
+                    "pool": "0x794a61358d6845594f94dc1db02a252b5b4814ad",
+                    "source": "https://docs.aave.com/developers/deployed-contracts/v3-mainnet",
+                    "verified": "https://snowtrace.io/address/0x794a61358D6845594F94dc1DB02A252b5b4814aD"
+                }
+            }
+        },
+        "aave_v2": {
+            "lending": {
+                "1": {
+                    "lending_pool": "0x7d2768de32b0B80B7A3454c06bDd538Ab274a0cd",
+                    "source": "https://docs.aave.com/developers/v/2.0/deployed-contracts/deployed-contracts",
+                    "verified": "https://etherscan.io/address/0x7d2768dE32b0b80b7a3454c06BdD538ab274a0cd"
+                }
+            }
+        },
+        "compound_v3": {
+            "lending": {
+                "1": {
+                    "comet_usdc": "0xc3d688B66703497DAA19211EEdff47f25384cdc3",
+                    "source": "https://docs.compound.finance/",
+                    "verified": "https://etherscan.io/address/0xc3d688B66703497DAA19211EEdff47f25384cdc3"
+                }
+            }
+        },
+        "compound_v2": {
+            "lending": {
+                "1": {
+                    "comptroller": "0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B",
+                    "source": "https://compound.finance/docs",
+                    "verified": "https://etherscan.io/address/0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B"
+                }
+            }
+        },
+        "uniswap_v3": {
+            "dex": {
+                "1": {
+                    "factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+                    "source": "https://docs.uniswap.org/contracts/v3/reference/deployments",
+                    "verified": "https://etherscan.io/address/0x1F98431c8aD98523631AE4a59f267346ea31F984"
+                },
+                "10": {
+                    "factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+                    "source": "https://docs.uniswap.org/contracts/v3/reference/deployments",
+                    "verified": "https://optimistic.etherscan.io/address/0xcb2436774C3e191c85056d248EF4260ce5f27A9D"
+                },
+                "42161": {
+                    "factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+                    "source": "https://docs.uniswap.org/contracts/v3/reference/deployments",
+                    "verified": "https://arbiscan.io/address/0x1F98431c8aD98523631AE4a59f267346ea31F984"
+                }
+            }
+        },
+        "uniswap_v2": {
+            "dex": {
+                "1": {
+                    "factory": "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
+                    "source": "https://docs.uniswap.org/contracts/v2/reference/smart-contracts/factory",
+                    "verified": "https://etherscan.io/address/0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"
+                }
+            }
+        },
+        "quickswap": {
+            "dex": {
+                "137": {
+                    "factory": "0x5757371414417b8C6CAad45bAeF941aBc7d3Ab32",
+                    "source": "https://docs.quickswap.exchange/",
+                    "verified": "https://polygonscan.com/address/0x5757371414417b8C6CAad45bAeF941aBc7d3Ab32"
+                }
+            }
+        },
+        "pangolin": {
+            "dex": {
+                "43114": {
+                    "factory": "0xefa94DE7a4656D787667C749f7E1223D71E9FD88",
+                    "source": "https://pangolin.exchange/",
+                    "verified": "https://snowtrace.io/address/0xefa94DE7a4656D787667C749f7E1223D71E9FD88"
+                }
+            }
+        },
+        "aave_staking": {
+            "yield": {
+                "1": {
+                    "stkaave": "0x4da27a545c0c5B758a6BA100e3a049001de870f5",
+                    "source": "https://docs.aave.com/developers/",
+                    "verified": "https://etherscan.io/address/0x4da27a545c0c5B758a6BA100e3a049001de870f5"
+                }
+            }
+        },
+        "yearn_v2": {
+            "yield": {
+                "1": {
+                    "registry": "0x50c1a2eA073804A0d207F212239d7b42d76f1c2E",
+                    "source": "https://docs.yearn.fi/",
+                    "verified": "https://etherscan.io/address/0x50c1a2eA073804A0d207F212239d7b42d76f1c2E"
+                }
+            }
+        },
+        "lido": {
+            "yield": {
+                "1": {
+                    "steth": "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84",
+                    "source": "https://docs.lido.fi/",
+                    "verified": "https://etherscan.io/address/0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84"
+                }
+            }
+        },
+        "aave_governance": {
+            "governance": {
+                "1": {
+                    "governance_v2": "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84",
+                    "source": "https://docs.aave.com/developers/v/2.0/protocol-governance/governance",
+                    "verified": "https://etherscan.io/address/0xEC568fffba86c094cf06b22134B23074DFE2252c"
+                }
+            }
+        },
+        "compound_governor": {
+            "governance": {
+                "1": {
+                    "governor_bravo": "0x408ED6354d4973f66138C91495F2f2FCbd8724C3",
+                    "source": "https://docs.compound.finance/",
+                    "verified": "https://etherscan.io/address/0x408ED6354d4973f66138C91495F2f2FCbd8724C3"
+                }
+            }
+        }
+    },
+    "applicability": {
+        "lending": {
+            "aave_v3": [
+                1,
+                10,
+                137,
+                8453,
+                42161,
+                43114
+            ],
+            "aave_v2": [
+                1
+            ],
+            "compound_v3": [
+                1
+            ],
+            "compound_v2": [
+                1
+            ]
+        },
+        "dex": {
+            "uniswap_v3": [
+                1,
+                10,
+                42161
+            ],
+            "uniswap_v2": [
+                1
+            ],
+            "quickswap": [
+                137
+            ],
+            "pangolin": [
+                43114
+            ]
+        },
+        "yield": {
+            "aave_staking": [
+                1
+            ],
+            "yearn_v2": [
+                1
+            ],
+            "lido": [
+                1
+            ]
+        },
+        "governance": {
+            "aave_governance": [
+                1
+            ],
+            "compound_governor": [
+                1
+            ]
+        }
+    }
+}

@@ -1,0 +1,122 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Plight Protocol Addresses Configuration",
+    "description": "Canonical registry of protocol deployment addresses across chains",
+    "type": "object",
+    "required": [
+        "version",
+        "lastUpdated",
+        "protocols",
+        "applicability"
+    ],
+    "properties": {
+        "version": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$",
+            "description": "Configuration version (semver)"
+        },
+        "lastUpdated": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "Last update date (YYYY-MM-DD)"
+        },
+        "protocols": {
+            "type": "object",
+            "description": "Protocol deployment addresses",
+            "patternProperties": {
+                "^[a-z_]+$": {
+                    "type": "object",
+                    "patternProperties": {
+                        "^(lending|dex|yield|governance)$": {
+                            "type": "object",
+                            "patternProperties": {
+                                "^\\d+$": {
+                                    "type": "object",
+                                    "required": [
+                                        "source",
+                                        "verified"
+                                    ],
+                                    "properties": {
+                                        "source": {
+                                            "type": "string",
+                                            "format": "uri",
+                                            "description": "Official documentation URL"
+                                        },
+                                        "verified": {
+                                            "type": "string",
+                                            "format": "uri",
+                                            "description": "Block explorer verification URL"
+                                        }
+                                    },
+                                    "patternProperties": {
+                                        "^[a-z_]+$": {
+                                            "type": "string",
+                                            "pattern": "^0x[a-fA-F0-9]{40}$",
+                                            "description": "Ethereum address"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "applicability": {
+            "type": "object",
+            "required": [
+                "lending",
+                "dex",
+                "yield",
+                "governance"
+            ],
+            "properties": {
+                "lending": {
+                    "type": "object",
+                    "patternProperties": {
+                        "^[a-z_]+$": {
+                            "type": "array",
+                            "items": {
+                                "type": "number",
+                                "description": "Chain ID"
+                            }
+                        }
+                    }
+                },
+                "dex": {
+                    "type": "object",
+                    "patternProperties": {
+                        "^[a-z_]+$": {
+                            "type": "array",
+                            "items": {
+                                "type": "number"
+                            }
+                        }
+                    }
+                },
+                "yield": {
+                    "type": "object",
+                    "patternProperties": {
+                        "^[a-z_]+$": {
+                            "type": "array",
+                            "items": {
+                                "type": "number"
+                            }
+                        }
+                    }
+                },
+                "governance": {
+                    "type": "object",
+                    "patternProperties": {
+                        "^[a-z_]+$": {
+                            "type": "array",
+                            "items": {
+                                "type": "number"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

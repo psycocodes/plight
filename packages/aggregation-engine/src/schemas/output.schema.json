@@ -1,0 +1,210 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Plight Aggregation Output Schema v2.1.0",
+    "description": "Canonical schema for DeFi activity aggregation - factual signals only, no policy logic",
+    "type": "object",
+    "required": [
+        "schema_version",
+        "metadata",
+        "signals",
+        "invariants",
+        "commitment"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "schema_version": {
+            "type": "string",
+            "const": "2.1.0",
+            "description": "Schema version identifier"
+        },
+        "metadata": {
+            "type": "object",
+            "required": [
+                "chain_id",
+                "observation_window",
+                "aggregation_block"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "chain_id": {
+                    "type": "number",
+                    "description": "Primary chain ID for this aggregation"
+                },
+                "observation_window": {
+                    "type": "object",
+                    "required": [
+                        "start_block",
+                        "end_block"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "start_block": {
+                            "type": "number",
+                            "minimum": 0,
+                            "description": "Inclusive start block of observation window"
+                        },
+                        "end_block": {
+                            "type": "number",
+                            "minimum": 0,
+                            "description": "Inclusive end block of observation window"
+                        }
+                    }
+                },
+                "aggregation_block": {
+                    "type": "number",
+                    "minimum": 0,
+                    "description": "Block at which aggregation was performed (typically end_block + 1)"
+                }
+            }
+        },
+        "signals": {
+            "type": "object",
+            "required": [
+                "lending",
+                "dex",
+                "yield",
+                "governance"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "lending": {
+                    "type": "object",
+                    "required": [
+                        "had_borrow",
+                        "borrow_count",
+                        "had_liquidation",
+                        "liquidation_count"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "had_borrow": {
+                            "type": "boolean",
+                            "description": "True if any borrow events occurred"
+                        },
+                        "borrow_count": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 255,
+                            "description": "Number of borrow events (saturated at 255)"
+                        },
+                        "had_liquidation": {
+                            "type": "boolean",
+                            "description": "True if any liquidation events occurred"
+                        },
+                        "liquidation_count": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 255,
+                            "description": "Number of liquidation events (saturated at 255)"
+                        }
+                    }
+                },
+                "dex": {
+                    "type": "object",
+                    "required": [
+                        "had_swap",
+                        "swap_count",
+                        "liquidity_add_count"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "had_swap": {
+                            "type": "boolean",
+                            "description": "True if any swap events occurred"
+                        },
+                        "swap_count": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 255,
+                            "description": "Number of swap events (saturated at 255)"
+                        },
+                        "liquidity_add_count": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 255,
+                            "description": "Number of liquidity provision events (saturated at 255)"
+                        }
+                    }
+                },
+                "yield": {
+                    "type": "object",
+                    "required": [
+                        "had_deposit",
+                        "deposit_count"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "had_deposit": {
+                            "type": "boolean",
+                            "description": "True if any deposit events occurred"
+                        },
+                        "deposit_count": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 255,
+                            "description": "Number of deposit events (saturated at 255)"
+                        }
+                    }
+                },
+                "governance": {
+                    "type": "object",
+                    "required": [
+                        "had_vote",
+                        "vote_count"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "had_vote": {
+                            "type": "boolean",
+                            "description": "True if any vote events occurred"
+                        },
+                        "vote_count": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 255,
+                            "description": "Number of vote events (saturated at 255)"
+                        }
+                    }
+                }
+            }
+        },
+        "invariants": {
+            "type": "object",
+            "required": [
+                "complete_chain_data",
+                "adapter_execution_successful"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "complete_chain_data": {
+                    "type": "boolean",
+                    "description": "True if all chain data was successfully retrieved"
+                },
+                "adapter_execution_successful": {
+                    "type": "boolean",
+                    "description": "True if all adapters executed without errors"
+                }
+            }
+        },
+        "commitment": {
+            "type": "object",
+            "required": [
+                "nullifier",
+                "issued_at_block"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "nullifier": {
+                    "type": "string",
+                    "pattern": "^0x[a-fA-F0-9]+$",
+                    "description": "Privacy-preserving user identifier (hex-encoded commitment)"
+                },
+                "issued_at_block": {
+                    "type": "number",
+                    "minimum": 0,
+                    "description": "Block number at which this output was issued"
+                }
+            }
+        }
+    }
+}

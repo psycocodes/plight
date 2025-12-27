@@ -1,0 +1,39 @@
+{
+  "schema_version": "2.1.0",
+  "metadata": {
+    "chain_id": 1,
+    "observation_window": {
+      "start_block": 18000000,
+      "end_block": 19000000
+    },
+    "aggregation_block": 19000001
+  },
+  "signals": {
+  "lending": {
+    "had_borrow": false,
+    "had_liquidation": false,
+    "borrow_count": 0,
+    "liquidation_count": 0
+  },
+  "dex": {
+    "had_swap": false,
+    "swap_count": 0,
+    "liquidity_add_count": 0
+  },
+  "yield": {
+    "had_deposit": false,
+    "deposit_count": 0
+  },
+  "governance": {
+    "had_vote": false,
+    "vote_count": 0  }
+},
+  "invariants": {
+    "complete_chain_data": true,
+    "adapter_execution_successful": true
+  },
+  "commitment": {
+    "nullifier": "0xNULLIFIER",
+    "issued_at_block": 19000001
+  }
+}
