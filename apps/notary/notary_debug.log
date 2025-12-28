@@ -1,0 +1,89 @@
+
+> notary-service@1.0.0 dev
+> ts-node src/index.ts
+
+[Signer] Using dummy private key (NOTARY_PRIVATE_KEY not set)
+[Signer] Private Key Length: 32
+[Signer] Using dummy private key (NOTARY_PRIVATE_KEY not set)
+[Signer] Private Key Length: 32
+{"level":30,"time":1766895085001,"pid":242664,"hostname":"Archie","msg":"Server listening at http://0.0.0.0:3000"}
+Notary Service running on port 3000
+Notary Public Key: [15944627324083773346390189001500210680939402028015651549526524193195473201952, 17251889856797524237981285661279357764562574766148660962999867467495459148286]
+{"level":30,"time":1766896066315,"pid":242664,"hostname":"Archie","reqId":"req-1","req":{"method":"OPTIONS","url":"/attest","hostname":"127.0.0.1:3000","remoteAddress":"127.0.0.1","remotePort":52106},"msg":"incoming request"}
+{"level":30,"time":1766896066329,"pid":242664,"hostname":"Archie","reqId":"req-1","res":{"statusCode":204},"responseTime":12.50296900048852,"msg":"request completed"}
+{"level":30,"time":1766896066861,"pid":242664,"hostname":"Archie","reqId":"req-2","req":{"method":"POST","url":"/attest","hostname":"127.0.0.1:3000","remoteAddress":"127.0.0.1","remotePort":52106},"msg":"incoming request"}
+[Notary] Starting Aggregation...
+[Notary] Running real aggregation... {
+  version: '1.0',
+  subject: '0x0A8d770b27BeA25Cf8ad52a3F294847280193c8e',
+  chainId: 1,
+  protocol: 'aave_v3',
+  window: { from: 0, to: 0 },
+  blockRange: { fromBlock: 1, toBlock: 100 }
+}
+[Notary] Aggregation Complete: {
+  dataHash: '0x6b88d407763a81ebff1bb3f6e3063da424017bb8bbc575e275039bfb3d463d75',
+  liquidationCount: 0
+}
+[Notary] Computing Attestation Hash...
+[Notary] Attestation Hash: 17110761656309163397008007085452907642737107306045691168142656782522553691857
+[Notary] Signing...
+[Signer] Signing inputs: [
+  '1',
+  '1766982473',
+  '60244682939192850060003917432019244175710567566',
+  '0'
+]
+[Signer] Eddsa keys: [ 'babyJub', 'pedersenHash', 'mimc7', 'poseidon', 'mimcSponge', 'F' ]
+[Signer] Poseidon hash success: 17110761656309163397008007085452907642737107306045691168142656782522553691857
+[Signer] this.eddsa.sign not found, using signPoseidon
+[Notary] Error during processing: TypeError: Cannot convert a BigInt value to a number
+    at new Uint8Array (<anonymous>)
+    at ThreadManager.setBuff (/home/Mohikshit/code/root/plight/main/node_modules/ffjavascript/build/main.cjs:4591:21)
+    at WasmField1.op1 (/home/Mohikshit/code/root/plight/main/node_modules/ffjavascript/build/main.cjs:3259:17)
+    at WasmField1.fromMontgomery (/home/Mohikshit/code/root/plight/main/node_modules/ffjavascript/build/main.cjs:3299:21)
+    at WasmField1.toRprLE (/home/Mohikshit/code/root/plight/main/node_modules/ffjavascript/build/main.cjs:3394:23)
+    at Eddsa.signPoseidon (/home/Mohikshit/code/root/plight/main/node_modules/circomlibjs/build/main.cjs:25820:11)
+    at SignerService.signAttestation (/home/Mohikshit/code/root/plight/main/apps/notary/src/services/signer.ts:122:34)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async Object.<anonymous> (/home/Mohikshit/code/root/plight/main/apps/notary/src/routes/attest.ts:62:32)
+{"level":50,"time":1766896073940,"pid":242664,"hostname":"Archie","reqId":"req-2","req":{"method":"POST","url":"/attest","hostname":"127.0.0.1:3000","remoteAddress":"127.0.0.1","remotePort":52106},"res":{"statusCode":500},"err":{"type":"TypeError","message":"Cannot convert a BigInt value to a number","stack":"TypeError: Cannot convert a BigInt value to a number\n    at new Uint8Array (<anonymous>)\n    at ThreadManager.setBuff (/home/Mohikshit/code/root/plight/main/node_modules/ffjavascript/build/main.cjs:4591:21)\n    at WasmField1.op1 (/home/Mohikshit/code/root/plight/main/node_modules/ffjavascript/build/main.cjs:3259:17)\n    at WasmField1.fromMontgomery (/home/Mohikshit/code/root/plight/main/node_modules/ffjavascript/build/main.cjs:3299:21)\n    at WasmField1.toRprLE (/home/Mohikshit/code/root/plight/main/node_modules/ffjavascript/build/main.cjs:3394:23)\n    at Eddsa.signPoseidon (/home/Mohikshit/code/root/plight/main/node_modules/circomlibjs/build/main.cjs:25820:11)\n    at SignerService.signAttestation (/home/Mohikshit/code/root/plight/main/apps/notary/src/services/signer.ts:122:34)\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async Object.<anonymous> (/home/Mohikshit/code/root/plight/main/apps/notary/src/routes/attest.ts:62:32)"},"msg":"Cannot convert a BigInt value to a number"}
+{"level":30,"time":1766896073944,"pid":242664,"hostname":"Archie","reqId":"req-2","res":{"statusCode":500},"responseTime":7083.1853899993,"msg":"request completed"}
+{"level":30,"time":1766896803977,"pid":242664,"hostname":"Archie","reqId":"req-3","req":{"method":"POST","url":"/attest","hostname":"127.0.0.1:3000","remoteAddress":"127.0.0.1","remotePort":57830},"msg":"incoming request"}
+[Notary] Starting Aggregation...
+[Notary] Running real aggregation... {
+  version: '1.0',
+  subject: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
+  chainId: 1,
+  protocol: 'aave_v3',
+  window: { from: 0, to: 0 },
+  blockRange: { fromBlock: 1, toBlock: 100 }
+}
+[Notary] Aggregation Complete: {
+  dataHash: '0x6b88d407763a81ebff1bb3f6e3063da424017bb8bbc575e275039bfb3d463d75',
+  liquidationCount: 0
+}
+[Notary] Computing Attestation Hash...
+[Notary] Attestation Hash: 1413626388083032794475417040100127726768808755709691456034150062674304798476
+[Notary] Signing...
+[Signer] Signing inputs: [
+  '1',
+  '1766983210',
+  '1390849295786071768276380950238675083608645509734',
+  '0'
+]
+[Signer] Eddsa keys: [ 'babyJub', 'pedersenHash', 'mimc7', 'poseidon', 'mimcSponge', 'F' ]
+[Signer] Poseidon hash success: 1413626388083032794475417040100127726768808755709691456034150062674304798476
+[Signer] this.eddsa.sign not found, using signPoseidon
+[Notary] Error during processing: TypeError: Cannot convert a BigInt value to a number
+    at new Uint8Array (<anonymous>)
+    at ThreadManager.setBuff (/home/Mohikshit/code/root/plight/main/node_modules/ffjavascript/build/main.cjs:4591:21)
+    at WasmField1.op1 (/home/Mohikshit/code/root/plight/main/node_modules/ffjavascript/build/main.cjs:3259:17)
+    at WasmField1.fromMontgomery (/home/Mohikshit/code/root/plight/main/node_modules/ffjavascript/build/main.cjs:3299:21)
+    at WasmField1.toRprLE (/home/Mohikshit/code/root/plight/main/node_modules/ffjavascript/build/main.cjs:3394:23)
+    at Eddsa.signPoseidon (/home/Mohikshit/code/root/plight/main/node_modules/circomlibjs/build/main.cjs:25820:11)
+    at SignerService.signAttestation (/home/Mohikshit/code/root/plight/main/apps/notary/src/services/signer.ts:122:34)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async Object.<anonymous> (/home/Mohikshit/code/root/plight/main/apps/notary/src/routes/attest.ts:62:32)
+{"level":50,"time":1766896810938,"pid":242664,"hostname":"Archie","reqId":"req-3","req":{"method":"POST","url":"/attest","hostname":"127.0.0.1:3000","remoteAddress":"127.0.0.1","remotePort":57830},"res":{"statusCode":500},"err":{"type":"TypeError","message":"Cannot convert a BigInt value to a number","stack":"TypeError: Cannot convert a BigInt value to a number\n    at new Uint8Array (<anonymous>)\n    at ThreadManager.setBuff (/home/Mohikshit/code/root/plight/main/node_modules/ffjavascript/build/main.cjs:4591:21)\n    at WasmField1.op1 (/home/Mohikshit/code/root/plight/main/node_modules/ffjavascript/build/main.cjs:3259:17)\n    at WasmField1.fromMontgomery (/home/Mohikshit/code/root/plight/main/node_modules/ffjavascript/build/main.cjs:3299:21)\n    at WasmField1.toRprLE (/home/Mohikshit/code/root/plight/main/node_modules/ffjavascript/build/main.cjs:3394:23)\n    at Eddsa.signPoseidon (/home/Mohikshit/code/root/plight/main/node_modules/circomlibjs/build/main.cjs:25820:11)\n    at SignerService.signAttestation (/home/Mohikshit/code/root/plight/main/apps/notary/src/services/signer.ts:122:34)\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async Object.<anonymous> (/home/Mohikshit/code/root/plight/main/apps/notary/src/routes/attest.ts:62:32)"},"msg":"Cannot convert a BigInt value to a number"}
+{"level":30,"time":1766896810940,"pid":242664,"hostname":"Archie","reqId":"req-3","res":{"statusCode":500},"responseTime":6962.251574996859,"msg":"request completed"}

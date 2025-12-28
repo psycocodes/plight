@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "./Verifier.sol";
 
-contract PlightVerifier is Verifier {
+contract PlightVerifier is Groth16Verifier {
     function verifyProof(
         bytes calldata proof,
         uint256[] calldata publicSignals

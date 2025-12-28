@@ -1,135 +1,64 @@
-# Turborepo starter
+# Plight
 
-This Turborepo starter is maintained by the Turborepo core team.
+**Privacy-Preserving DeFi Eligibility Layer**
 
-## Using this example
+Plight enables users to prove their on-chain reputation (e.g., "I have not been liquidated in the last year") to DeFi protocols without revealing their wallet address or transaction history. It bridges the gap between anonymous DeFi and reputation-based finance using Zero-Knowledge Proofs.
 
-Run the following command:
+## The Problem
 
-```sh
-npx create-turbo@latest
+DeFi protocols currently treat all users the same. To protect against bad actors, they force everyone to over-collateralize and pay high premiums. Existing solutions for "credit scores" often require KYC (doxxing) or publicizing your entire wallet history, which goes against the ethos of privacy-preserving finance.
+
+## How It Works
+
+Plight uses a **Commit-and-Prove** architecture to separate data verification from identity revelation.
+
+1.  **Aggregate (Off-Chain):** The user connects their wallet. The Plight Aggregation Engine scans their history across protocols (Aave, Compound) on multiple chains (Ethereum, Polygon) to compute behavioral metrics (e.g., liquidation count).
+2.  **Notarize (Blind Signing):** The Aggregator sends a blinded summary to the Notary Service. The Notary signs this summary, attesting to its validity without knowing the user's identity or storing the data.
+3.  **Prove (Client-Side ZK):** The user's browser generates a Zero-Knowledge Proof (using SnarkJS/Circom). This proof cryptographically asserts:
+    *   "I hold a valid attestation from the Notary."
+    *   "The attestation says my liquidation count is 0."
+    *   "I am not revealing my address or the signature itself."
+4.  **Verify (On-Chain):** The user submits the proof to a DeFi protocol's smart contract. The contract verifies the proof and grants access to better terms (e.g., lower collateral ratio) without ever learning *who* the user is.
+
+## Architecture
+
+This project is organized as a monorepo:
+
+*   **`apps/web`**: The user-facing dashboard. Built with Next.js, Wagmi, and Tailwind. Handles wallet connection and client-side proof generation.
+*   **`apps/notary`**: A trusted service that verifies off-chain data and issues EdDSA signatures on Poseidon hashes.
+*   **`packages/circuits`**: Circom circuits that define the logic for the Zero-Knowledge proofs.
+*   **`packages/contracts`**: Solidity contracts for verifying proofs on-chain.
+*   **`packages/sdk`**: Shared TypeScript libraries for proof generation and API communication.
+
+## Getting Started
+
+### Prerequisites
+- Node.js 18+
+- pnpm or npm
+
+### Installation
+
+```bash
+npm install
 ```
 
-## What's inside?
+### Running the Stack
 
-This Turborepo includes the following packages/apps:
+1.  **Start the Notary Service:**
+    ```bash
+    npm run dev --workspace=apps/notary
+    ```
 
-### Apps and Packages
+2.  **Start the Frontend:**
+    ```bash
+    npm run dev --workspace=apps/web
+    ```
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+3.  **Visit:** `http://localhost:3002`
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+## How Kiro was used
 
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
-```
-
-You can build a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
-
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
-
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+- Used Kiro IDE to plan the project (requirements, design, tasks).
+- Used Kiro to design UI/UX elements (eligibility card, flows, micro-interactions).
+- Used Kiro to design the aggregator engine in the backend (fetch, compute, sign).
+- Planning and design docs are in the `kirop/` folder.

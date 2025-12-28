@@ -11,6 +11,7 @@ export const SUPPORTED_CHAINS: ChainConfig[] = [
   { chainId: 8453, name: 'base', rpcEnvVar: 'BASE_RPC_URL' },
   { chainId: 42161, name: 'arbitrum', rpcEnvVar: 'ARB_RPC_URL' },
   { chainId: 43114, name: 'avalanche', rpcEnvVar: 'AVAX_RPC_URL' },
+  { chainId: 11155111, name: 'sepolia', rpcEnvVar: 'SEPOLIA_RPC_URL' },
 ];
 
 export function getChainConfig(chainId: number): ChainConfig {

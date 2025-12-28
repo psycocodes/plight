@@ -15,12 +15,23 @@ export class SignerService {
   constructor() {
     const envKey = process.env.NOTARY_PRIVATE_KEY;
     if (envKey) {
-       this.privateKey = Buffer.from(envKey.replace(/^0x/, ''), 'hex');
+       const hexKey = envKey.replace(/^0x/, '');
+       if (hexKey.length !== 64) {
+         console.warn(`[Signer] Warning: NOTARY_PRIVATE_KEY length is ${hexKey.length} chars (expected 64). Padding/Truncating.`);
+       }
+       const buffer = Buffer.from(hexKey, 'hex');
+       if (buffer.length < 32) {
+         this.privateKey = Buffer.concat([buffer, Buffer.alloc(32 - buffer.length)]);
+       } else {
+         this.privateKey = buffer.subarray(0, 32);
+       }
     } else {
       // Dummy default for dev if not present
+      console.log('[Signer] Using dummy private key (NOTARY_PRIVATE_KEY not set)');
       this.privateKey = Buffer.alloc(32, 1); 
     }
     
+    console.log(`[Signer] Private Key Length: ${this.privateKey.length}`);
     this.initialized = this.init();
   }
 
@@ -68,36 +79,67 @@ export class SignerService {
       return this.poseidon.F.toString(hash); // Returns decimal string representation of field element
   }
 
+  public async signAttestation(
+      protocol: string, 
+      expiresAt: number, 
+      subject: string, 
+      summaryValue: number
+  ): Promise<string> {
+      await this.initialized;
+      
+      const policyId = this.mapProtocolToId(protocol);
+      const userAddrBigInt = BigInt(subject);
+      
+      const inputs = [
+          BigInt(policyId),
+          BigInt(expiresAt),
+          userAddrBigInt,
+          BigInt(summaryValue)
+      ];
+
+      console.log('[Signer] Signing inputs:', inputs.map(i => i.toString()));
+      console.log('[Signer] Eddsa keys:', Object.keys(this.eddsa));
+
+      // Ensure private key is Uint8Array and exactly 32 bytes
+      const prvKey = new Uint8Array(32);
+      prvKey.set(this.privateKey);
+
+      // Debug Poseidon
+      try {
+        const testHash = this.poseidon(inputs);
+        console.log('[Signer] Poseidon hash success:', this.poseidon.F.toString(testHash));
+      } catch (e) {
+        console.error('[Signer] Poseidon hash failed:', e);
+      }
+
+      // Fallback to signPoseidon if sign is missing, or try to find sign
+      let signature;
+      if (typeof this.eddsa.sign === 'function') {
+          const hash = this.poseidon(inputs);
+          signature = this.eddsa.sign(prvKey, hash);
+      } else {
+          console.log('[Signer] this.eddsa.sign not found, using signPoseidon');
+          signature = this.eddsa.signPoseidon(prvKey, inputs);
+      }
+      
+      const F = this.eddsa.F;
+      const r8x = F.toObject(signature.R8[0]); // Uint8Array(32)
+      const r8y = F.toObject(signature.R8[1]);
+      const s = signature.S; // bigint
+
+      const toHex = (n: Uint8Array) => Buffer.from(n).toString('hex').padStart(64, '0');
+      
+      const r8xHex = toHex(r8x);
+      const r8yHex = toHex(r8y);
+      let sHex = s.toString(16).padStart(64, '0');
+      if (sHex.length % 2 !== 0) sHex = '0' + sHex;
+
+      return `0x${r8xHex}${r8yHex}${sHex}`;
+  }
+
   async signAttestationHash(hashDecimalString: string): Promise<string> {
-    await this.initialized;
-    
-    const hashBigInt = BigInt(hashDecimalString);
-    const signature = this.eddsa.signPoseidon(this.privateKey, hashBigInt);
-    
-    // Pack signature: R8x (32) + R8y (32) + S (32)
-    // signature = { R8: [F.toObject(x), F.toObject(y)], S: bigint }
-    
-    const F = this.eddsa.F;
-    const r8x = F.toObject(signature.R8[0]); // Uint8Array(32)
-    const r8y = F.toObject(signature.R8[1]);
-    const s = signature.S; // bigint
-
-    // Convert S to 32-byte buffer (LE or BE? Circom uses LE usually, but let's check standard packing)
-    // Actually, let's just use hex strings for valid output
-    const toHex = (n: Uint8Array) => Buffer.from(n).toString('hex').padStart(64, '0');
-    // For BigInt s, convert to buffer
-    
-    // We will return a specific format that the client can parse.
-    // userAddress (hex) is 20 bytes.
-    // Returns: 0x<R8x><R8y><S>
-    
-    const r8xHex = toHex(r8x);
-    const r8yHex = toHex(r8y);
-    // S is bigint. 
-    let sHex = s.toString(16).padStart(64, '0');
-    if (sHex.length % 2 !== 0) sHex = '0' + sHex;
-
-    return `0x${r8xHex}${r8yHex}${sHex}`;
+    // Deprecated or fallback
+    return this.signAttestation('aave_v3', 0, '0', 0); // Dummy
   }
   
   // Expose public key for the circuit

@@ -34,9 +34,9 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.SampleProtocol__factory>;
     getContractFactory(
-      name: "Verifier",
+      name: "Groth16Verifier",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.Verifier__factory>;
+    ): Promise<Contracts.Groth16Verifier__factory>;
 
     getContractAt(
       name: "HealthPolicy",
@@ -64,10 +64,10 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.SampleProtocol>;
     getContractAt(
-      name: "Verifier",
+      name: "Groth16Verifier",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
-    ): Promise<Contracts.Verifier>;
+    ): Promise<Contracts.Groth16Verifier>;
 
     deployContract(
       name: "HealthPolicy",
@@ -90,9 +90,9 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.SampleProtocol>;
     deployContract(
-      name: "Verifier",
+      name: "Groth16Verifier",
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.Verifier>;
+    ): Promise<Contracts.Groth16Verifier>;
 
     deployContract(
       name: "HealthPolicy",
@@ -120,10 +120,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.SampleProtocol>;
     deployContract(
-      name: "Verifier",
+      name: "Groth16Verifier",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.Verifier>;
+    ): Promise<Contracts.Groth16Verifier>;
 
     // default types
     getContractFactory(

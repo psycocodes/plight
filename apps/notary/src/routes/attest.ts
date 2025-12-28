@@ -22,46 +22,65 @@ export async function attestRoutes(fastify: FastifyInstance) {
     // Let's just log it.
     
     // 3. Aggregate
-    const { summaryHash: dataHash, liquidationCount } = await mockAggregator.aggregate(params);
+    console.log('[Notary] Starting Aggregation...');
+    try {
+        const { summaryHash: dataHash, liquidationCount } = await mockAggregator.aggregate(params);
+        console.log('[Notary] Aggregation Complete:', { dataHash, liquidationCount });
 
-    // 4. Construct Attestation
-    const now = Math.floor(Date.now() / 1000);
-    const expires = now + (60 * 60 * 24); // 24 hours validity
+        // 4. Construct Attestation
+        const now = Math.floor(Date.now() / 1000);
+        const expires = now + (60 * 60 * 24); // 24 hours validity
 
-    // Compute ZK-Friendly Attestation Hash (Poseidon)
-    // Inputs: protocol, expiresAt, subject, liquidationCount
-    const attestationHash = await signer.computeAttestationHash(
-        params.protocol,
-        expires,
-        params.subject,
-        liquidationCount
-    );
+        // Compute ZK-Friendly Attestation Hash (Poseidon)
+        // Inputs: protocol, expiresAt, subject, liquidationCount
+        console.log('[Notary] Computing Attestation Hash...');
+        const attestationHash = await signer.computeAttestationHash(
+            params.protocol,
+            expires,
+            params.subject,
+            liquidationCount
+        );
+        console.log('[Notary] Attestation Hash:', attestationHash);
 
-    const attestation: Attestation = {
-      version: '1.0',
-      issuer: 'plight-notary-v1', // Should ideally match pubkey or known ID
-      subject: params.subject,
-      issuedAt: now,
-      expiresAt: expires,
-      chainId: params.chainId,
-      protocol: params.protocol,
-      window: params.window,
-      blockRange: params.blockRange,
-      summaryHash: attestationHash // This is the SIGNED hash (Poseidon Output)
-    };
+        const attestation: Attestation = {
+        version: '1.0',
+        issuer: 'plight-notary-v1', // Should ideally match pubkey or known ID
+        subject: params.subject,
+        issuedAt: now,
+        expiresAt: expires,
+        chainId: params.chainId,
+        protocol: params.protocol,
+        window: params.window,
+        blockRange: params.blockRange,
+        summaryHash: attestationHash // This is the SIGNED hash (Poseidon Output)
+        };
 
-    // 5. Sign (ZK-Friendly EdDSA on Poseidon)
-    // Signs the decimal string representation of the Poseidon hash
-    const signatureValue = await signer.signAttestationHash(attestationHash);
+        // 5. Sign (ZK-Friendly EdDSA on Poseidon)
+        // Signs the decimal string representation of the Poseidon hash
+        console.log('[Notary] Signing...');
+        // const signatureValue = await signer.signAttestationHash(attestationHash);
+        const signatureValue = await signer.signAttestation(
+            params.protocol,
+            expires,
+            params.subject,
+            liquidationCount
+        );
+        const publicKey = await signer.getPublicKey();
+        console.log('[Notary] Signed.');
 
-    const response: AttestationResponse = {
-      attestation,
-      signature: {
-        scheme: 'eddsa-poseidon',
-        value: signatureValue // 0x<R8x><R8y><S>
-      }
-    };
+        const response: AttestationResponse = {
+        attestation,
+        signature: {
+            scheme: 'eddsa-poseidon',
+            value: signatureValue, // 0x<R8x><R8y><S>
+            publicKey: publicKey // [Ax, Ay]
+        }
+        };
 
-    return response;
+        return response;
+    } catch (error: any) {
+        console.error('[Notary] Error during processing:', error);
+        throw error;
+    }
   });
 }

@@ -2,4 +2,3 @@
 /* tslint:disable */
 /* eslint-disable */
 export type { Groth16Verifier } from "./Groth16Verifier";
-export type { Verifier } from "./Verifier";

@@ -3,5 +3,5 @@
 /* eslint-disable */
 export * as healthPolicySol from "./HealthPolicy.sol";
 export * as sampleProtocolSol from "./SampleProtocol.sol";
+export * as verifierSol from "./Verifier.sol";
 export { PlightVerifier__factory } from "./PlightVerifier__factory";
-export { Verifier__factory } from "./Verifier__factory";

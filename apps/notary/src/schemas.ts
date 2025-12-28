@@ -53,4 +53,11 @@ export const AttestationResponseSchema = z.object({
   }),
 });
 
-export type AttestationResponse = z.infer<typeof AttestationResponseSchema>;
+export interface AttestationResponse {
+  attestation: Attestation;
+  signature: {
+    scheme: string;
+    value: string;
+    publicKey?: [string, string];
+  };
+}

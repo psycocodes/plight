@@ -58,30 +58,6 @@ contract HealthPolicy {
         // - "attestationHash" matches the signed data
         // - "signature" is valid from the Notary
         bool success = verifier.verifyProof(proof, publicInputs);
-
-        if (!success) {
-            revert VerificationFailed();
-        }
-
-        // 2. Validate Binding (Critical Security Check)
-        // The circuit MUST include the user's address as a public input to prevent replay attacks.
-        // We assume publicInputs[5] is the userAddress based on `main.circom` ordering:
-        // [attestationHash, expires, policyId, keyAx, keyAy, userAddress]
-        // Note: The caller must explicitly provide the correct inputs array.
-        // This check ensures the proof belongs to the `user` argument.
-        
-        // We cast the uint256 signal to an address for comparison.
-        // address recoveredUser = address(uint160(publicInputs[5])); 
-        
-        // However, to keep this wrapper THIN and agnostic to circuit updates (if signals reorder),
-        // we strictly return the verifier's result in this minimal version.
-        // Ideally, this contract WOULD check `inputs[i] == user` to bind it on-chain.
-        // Given the request for "Pure verification logic wrapper", we rely on the verifier 
-        // to have done the math. But usually, the binding check happens here.
-        
-        // Adding the check for robustness if we know the signal index:
-        // if (address(uint160(publicInputs[5])) != user) revert InvalidProof();
-
-        return true;
+        return success;
     }
 }

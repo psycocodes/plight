@@ -1,4 +1,5 @@
 import fastify from 'fastify';
+import cors from '@fastify/cors';
 import { attestRoutes } from './routes/attest';
 import * as dotenv from 'dotenv';
 import { SignerService } from './services/signer';
@@ -9,6 +10,12 @@ import * as path from 'path';
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 const server = fastify({ logger: true });
+
+// Register CORS
+server.register(cors, {
+  origin: true, // Allow all origins for dev
+  methods: ['GET', 'POST', 'OPTIONS']
+});
 
 // Register routes
 server.register(attestRoutes);

@@ -1,0 +1,40 @@
+
+> notary-service@1.0.0 dev
+> ts-node src/index.ts
+
+[Signer] Using dummy private key (NOTARY_PRIVATE_KEY not set)
+[Signer] Private Key Length: 32
+[Signer] Using dummy private key (NOTARY_PRIVATE_KEY not set)
+[Signer] Private Key Length: 32
+{"level":30,"time":1766894999473,"pid":241606,"hostname":"Archie","msg":"Server listening at http://0.0.0.0:3000"}
+Notary Service running on port 3000
+Notary Public Key: [15944627324083773346390189001500210680939402028015651549526524193195473201952, 17251889856797524237981285661279357764562574766148660962999867467495459148286]
+{"level":30,"time":1766895016707,"pid":241606,"hostname":"Archie","reqId":"req-1","req":{"method":"POST","url":"/attest","hostname":"127.0.0.1:3000","remoteAddress":"127.0.0.1","remotePort":52746},"msg":"incoming request"}
+[Notary] Starting Aggregation...
+[Notary] Running real aggregation... {
+  version: '1.0',
+  subject: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
+  chainId: 1,
+  protocol: 'aave_v3',
+  window: { from: 0, to: 0 },
+  blockRange: { fromBlock: 1, toBlock: 100 }
+}
+[Notary] Aggregation Complete: {
+  dataHash: '0x6b88d407763a81ebff1bb3f6e3063da424017bb8bbc575e275039bfb3d463d75',
+  liquidationCount: 0
+}
+[Notary] Computing Attestation Hash...
+[Notary] Attestation Hash: 5301204838508884631356238104775911837751398052406605636061780560403126426265
+[Notary] Signing...
+[Signer] Signing inputs: [
+  '1',
+  '1766981423',
+  '1390849295786071768276380950238675083608645509734',
+  '0'
+]
+[Notary] Error during processing: TypeError: this.eddsa.sign is not a function
+    at SignerService.signAttestation (/home/Mohikshit/code/root/plight/main/apps/notary/src/services/signer.ts:108:36)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async Object.<anonymous> (/home/Mohikshit/code/root/plight/main/apps/notary/src/routes/attest.ts:62:32)
+{"level":50,"time":1766895023755,"pid":241606,"hostname":"Archie","reqId":"req-1","req":{"method":"POST","url":"/attest","hostname":"127.0.0.1:3000","remoteAddress":"127.0.0.1","remotePort":52746},"res":{"statusCode":500},"err":{"type":"TypeError","message":"this.eddsa.sign is not a function","stack":"TypeError: this.eddsa.sign is not a function\n    at SignerService.signAttestation (/home/Mohikshit/code/root/plight/main/apps/notary/src/services/signer.ts:108:36)\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async Object.<anonymous> (/home/Mohikshit/code/root/plight/main/apps/notary/src/routes/attest.ts:62:32)"},"msg":"this.eddsa.sign is not a function"}
+{"level":30,"time":1766895023768,"pid":241606,"hostname":"Archie","reqId":"req-1","res":{"statusCode":500},"responseTime":7058.125156998634,"msg":"request completed"}

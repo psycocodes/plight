@@ -8,16 +8,11 @@ describe("PlightVerifier", function () {
     let plightVerifier: any;
 
     before(async function () {
-        // 1. Deploy generic Verifier (Groth16)
-        const VerifierFactory = await ethers.getContractFactory("Verifier");
-        const verifierContract = await VerifierFactory.deploy();
-        await verifierContract.waitForDeployment();
-        verifierAddress = await verifierContract.getAddress();
-
-        // 2. Deploy Wrapper
+        // Deploy Wrapper (which inherits Groth16Verifier)
         const PlightVerifierFactory = await ethers.getContractFactory("PlightVerifier");
-        plightVerifier = await PlightVerifierFactory.deploy(verifierAddress);
+        plightVerifier = await PlightVerifierFactory.deploy();
         await plightVerifier.waitForDeployment();
+        verifierAddress = await plightVerifier.getAddress();
     });
 
     it("Should verify a valid proof", async function () {
@@ -50,10 +45,10 @@ describe("PlightVerifier", function () {
 
         // Call Verify
         // Benchmark Gas (simulate transaction)
-        const gasEstimate = await plightVerifier.verify.estimateGas(encodedProof, publicJson);
+        const gasEstimate = await plightVerifier.verifyProof.estimateGas(encodedProof, publicJson);
         console.log("Estimated Gas (Valid Proof):", gasEstimate.toString());
 
-        const result = await plightVerifier.verify(encodedProof, publicJson);
+        const result = await plightVerifier.verifyProof(encodedProof, publicJson);
         expect(result).to.be.true;
     });
 
@@ -79,7 +74,7 @@ describe("PlightVerifier", function () {
         const tamperedInputs = [...publicJson];
         tamperedInputs[0] = "123456789"; // Change chainId
 
-        const result = await plightVerifier.verify(encodedProof, tamperedInputs);
+        const result = await plightVerifier.verifyProof(encodedProof, tamperedInputs);
         expect(result).to.be.false;
     });
 
@@ -91,7 +86,7 @@ describe("PlightVerifier", function () {
         const shortInputs = [1, 2, 3];
 
         await expect(
-            plightVerifier.verify(dummyProof, shortInputs)
-        ).to.be.revertedWith("Invalid input length: expected 19");
+            plightVerifier.verifyProof(dummyProof, shortInputs)
+        ).to.be.revertedWith("Invalid public signals length");
     });
 });
