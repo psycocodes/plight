@@ -1,3 +1,5 @@
+<img src="visuals/banner.png" width="100%" alt="Plight Banner">
+
 # Plight
 
 **Privacy-Preserving DeFi Eligibility Layer**
@@ -20,15 +22,23 @@ Plight uses a **Commit-and-Prove** architecture to separate data verification fr
     *   "I am not revealing my address or the signature itself."
 4.  **Verify (On-Chain):** The user submits the proof to a DeFi protocol's smart contract. The contract verifies the proof and grants access to better terms (e.g., lower collateral ratio) without ever learning *who* the user is.
 
+## UI Preview
+
+| Landing Page | Sample UI Layer for Users |
+|:---:|:---:|
+| ![Dashboard](visuals/screenshot1.png) | ![Verification](visuals/screenshot2.png) |
+
 ## Architecture
 
 This project is organized as a monorepo:
 
-*   **`apps/web`**: The user-facing dashboard. Built with Next.js, Wagmi, and Tailwind. Handles wallet connection and client-side proof generation.
+*   **[`apps/web`](apps/web/README.md)**: The user-facing dashboard. Built with Next.js, Wagmi, and Tailwind. Handles wallet connection and client-side proof generation.
 *   **`apps/notary`**: A trusted service that verifies off-chain data and issues EdDSA signatures on Poseidon hashes.
+*   **[`apps/aggregator`](apps/aggregator/README.md)**: The engine that fetches data from multiple chains and protocols.
+*   **[`packages/aggregation-engine`](packages/aggregation-engine/README.md)**: Core logic for normalizing and aggregating DeFi history.
 *   **`packages/circuits`**: Circom circuits that define the logic for the Zero-Knowledge proofs.
 *   **`packages/contracts`**: Solidity contracts for verifying proofs on-chain.
-*   **`packages/sdk`**: Shared TypeScript libraries for proof generation and API communication.
+*   **[`packages/sdk`](packages/sdk/README.md)**: Shared TypeScript libraries for proof generation and API communication.
 
 ## Getting Started
 
@@ -56,9 +66,11 @@ npm install
 
 3.  **Visit:** `http://localhost:3002`
 
-## How Kiro was used
+## Demo
 
-- Used Kiro IDE to plan the project (requirements, design, tasks).
-- Used Kiro to design UI/UX elements (eligibility card, flows, micro-interactions).
-- Used Kiro to design the aggregator engine in the backend (fetch, compute, sign).
-- Planning and design docs are in the `kirop/` folder.
+[![Plight Demo Video](https://img.youtube.com/vi/Fs5uEWURC6s/0.jpg)](https://youtu.be/Fs5uEWURC6s)
+
+Watch the full demo here: https://youtu.be/Fs5uEWURC6s
+
+
+
