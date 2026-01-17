@@ -3,7 +3,7 @@
 // 'ethers' is installed in notary.
 import { keccak256, toUtf8Bytes } from 'ethers';
 
-const NOTARY_URL = 'http://localhost:3000';
+const NOTARY_URL = 'https://notary-jade.vercel.app';
 const REGISTRY_URL = 'http://localhost:3001';
 
 async function verify() {
@@ -15,8 +15,11 @@ async function verify() {
     version: '1.0',
     chainId: 1,
     protocol: 'aave_v3',
+    // Added subject for validation (Vitalik's address as sample)
+    subject: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
     window: { from: 1700000000, to: 1700086400 },
-    blockRange: { fromBlock: 18000000, toBlock: 18001000 }
+    // Narrow block range to avoid indexer "too many results" errors during local verification
+    blockRange: { fromBlock: 18000000, toBlock: 18000050 }
   };
 
   let attestationRes;

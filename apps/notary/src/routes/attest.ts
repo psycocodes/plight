@@ -1,12 +1,23 @@
 import { FastifyInstance } from 'fastify';
 import { AttestationRequestSchema, Attestation, AttestationResponse } from '../schemas';
-import { mockAggregator } from '../services/aggregator';
+import { aggregatorService } from '../services/aggregator';
 import { SignerService } from '../services/signer';
 
-const signer = new SignerService();
+let signer: SignerService;
 
 export async function attestRoutes(fastify: FastifyInstance) {
   fastify.post<{ Body: unknown }>('/attest', async (request, reply) => {
+    // Lazy init signer to avoid cold-start crashes if configuration is bad
+    if (!signer) {
+        try {
+            console.log('[Notary] Initializing SignerService...');
+            signer = new SignerService();
+        } catch (e) {
+            console.error('[Notary] Signer Init Failed:', e);
+            return reply.code(500).send({ error: 'Signer Init Failed', details: String(e) });
+        }
+    }
+
     // 1. Validate Schema
     const parseResult = AttestationRequestSchema.safeParse(request.body);
     if (!parseResult.success) {
@@ -24,7 +35,7 @@ export async function attestRoutes(fastify: FastifyInstance) {
     // 3. Aggregate
     console.log('[Notary] Starting Aggregation...');
     try {
-        const { summaryHash: dataHash, liquidationCount } = await mockAggregator.aggregate(params);
+        const { summaryHash: dataHash, liquidationCount } = await aggregatorService.aggregate(params);
         console.log('[Notary] Aggregation Complete:', { dataHash, liquidationCount });
 
         // 4. Construct Attestation

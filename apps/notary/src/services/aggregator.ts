@@ -10,7 +10,7 @@ export interface AggregationService {
 
 
 // REAL Implementation
-export const mockAggregator: AggregationService = {
+export const aggregatorService: AggregationService = {
   aggregate: async (params: AttestationRequest) => {
     console.log('[Notary] Running real aggregation...', params);
     

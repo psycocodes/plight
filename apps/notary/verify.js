@@ -1,6 +1,6 @@
 const { keccak256, toUtf8Bytes } = require('ethers');
 
-const NOTARY_URL = 'http://localhost:3000';
+const NOTARY_URL = 'https://notary-jade.vercel.app';
 const REGISTRY_URL = 'http://localhost:3001';
 
 async function verify() {

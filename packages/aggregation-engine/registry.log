@@ -1,0 +1,1 @@
+run-verification.sh: line 19: cd: /home/Mohikshit/code/root/plight/main/packages/aggregation-engine/apps/revocation-registry: No such file or directory

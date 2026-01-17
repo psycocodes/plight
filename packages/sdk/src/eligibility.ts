@@ -18,10 +18,10 @@ export interface EligibilityResult {
 export async function fetchAttestation(userAddress: string, protocol: string): Promise<AttestationInput> {
     console.log('[SDK] Fetching Attestation from Notary...');
     
-    // Call the local Notary Service
+    // Call the deployed Notary Service on Vercel
     // Note: In a real app, this URL would be configurable via env vars
-    // Using 127.0.0.1 to avoid IPv6 resolution issues with localhost
-    const response = await fetch('http://127.0.0.1:3000/attest', {
+    // Using deployed URL provided by user
+    const response = await fetch('https://notary-jade.vercel.app/attest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

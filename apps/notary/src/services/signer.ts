@@ -1,18 +1,61 @@
-// @ts-ignore
-import { buildEddsa, buildPoseidon } from 'circomlibjs';
-// import { keccak256, toUtf8Bytes } from 'ethers'; // Removed, using Poseidon
+// Lazy load dependencies to prevent boot crashes on Vercel
+let eddsa: any;
+let poseidon: any;
+let babyJub: any;
+let utils: any;
+let F1Field: any;
+let Scalar: any;
+let createBlakeHash: any;
+
+function loadCryptoDeps() {
+    if (eddsa) return; // Already loaded
+    try {
+        console.log('[Signer] Loading crypto dependencies...');
+        const circom = require('circomlibjs');
+        eddsa = circom.eddsa;
+        poseidon = circom.poseidon;
+        babyJub = circom.babyjub;
+        
+        const ff = require('ffjavascript');
+        utils = ff.utils;
+        F1Field = ff.F1Field;
+        Scalar = ff.Scalar;
+        
+        createBlakeHash = require('blake-hash');
+        console.log('[Signer] Dependencies loaded successfully.');
+    } catch (e) {
+        console.error('[Signer] Failed to load crypto dependencies:', e);
+        throw e;
+    }
+}
+
+import { keccak256, toUtf8Bytes } from 'ethers';
 import * as dotenv from 'dotenv';
 import { Attestation } from '../schemas';
 
 dotenv.config();
 
+// Helper to prune buffer (from circomlibjs implementation)
+function pruneBuffer(_buff: any) {
+    // Ensure dependencies are loaded
+    // (This helper is used inside methods, so we can assume loadCryptoDeps called)
+    const buff = Buffer.from(_buff);
+    buff[0] = buff[0] & 0xF8;
+    buff[31] = buff[31] & 0x7F;
+    buff[31] = buff[31] | 0x40;
+    return buff;
+}
+
 export class SignerService {
   private privateKey: Uint8Array;
-  private eddsa: any;
-  private poseidon: any;
-  private initialized: Promise<void>;
+  
+  // Getters to access lazy deps
+  get eddsa() { return eddsa; }
+  get poseidon() { return poseidon; }
 
   constructor() {
+    loadCryptoDeps(); // Load on init
+    
     const envKey = process.env.NOTARY_PRIVATE_KEY;
     if (envKey) {
        const hexKey = envKey.replace(/^0x/, '');
@@ -32,12 +75,14 @@ export class SignerService {
     }
     
     console.log(`[Signer] Private Key Length: ${this.privateKey.length}`);
-    this.initialized = this.init();
+    // No async init needed for older circomlibjs
   }
 
-  private async init() {
-    this.eddsa = await buildEddsa();
-    this.poseidon = await buildPoseidon();
+  // Helper for F field string conversion since we don't have async build
+  // circomlibjs 0.0.8 uses internal FFjavascript but exposes less directly.
+  // We can trust poseidon(inputs) returns a standard field element (BigInt-like)
+  private elementToString(e: any): string {
+      return e.toString();
   }
 
   private mapProtocolToId(protocol: string): number {
@@ -50,24 +95,16 @@ export class SignerService {
   }
 
   // Pre-compute the ATTESTATION HASH (Poseidon)
-  // Input: [policyId, expiresAt, userAddress, liquidationCount]
-  // Note: we need specific signals. The generic "Attestation" object uses "summaryHash" to hold 
-  // aggregation result. For ZK, we need to know that "summaryHash" acts as "liquidationCount" 
-  // or contains it.
-  // Ideally, `computeAttestationHash` should accept the RAW inputs.
-  // But to adhere to the interface, we'll parse.
   public async computeAttestationHash(
       protocol: string, 
       expiresAt: number, 
       subject: string, 
       summaryValue: number // Extracted from aggregation
   ): Promise<string> {
-      await this.initialized;
       
       const policyId = this.mapProtocolToId(protocol);
       const userAddrBigInt = BigInt(subject);
       
-      // Hash Inputs: [policyId, expiresAt, userAddress, liquidationCount]
       const inputs = [
           BigInt(policyId),
           BigInt(expiresAt),
@@ -76,8 +113,38 @@ export class SignerService {
       ];
 
       const hash = this.poseidon(inputs);
-      return this.poseidon.F.toString(hash); // Returns decimal string representation of field element
+      return this.elementToString(hash); 
   }
+
+  // Manually implement signPoseidon to bypass library bug in v0.0.8
+  private signPoseidonManual(prv: Uint8Array, msg: BigInt | any) {
+    // ERROR in error trace: Blake.update... TypeError: Data must be a string or a buffer.
+    // Line 93: const h1 = createBlakeHash("blake512").update(prv).digest();
+    // 'prv' is Uint8Array? 
+    // Wait, createBlakeHash might expect Buffer explicitly if not shimmed for Uint8Array?
+    // Let's force Buffer.
+    const h1 = createBlakeHash("blake512").update(Buffer.from(prv)).digest();
+    const sBuff = pruneBuffer(h1.slice(0,32));
+    const s = utils.leBuff2int(sBuff);
+    const A = babyJub.mulPointEscalar(babyJub.Base8, Scalar.shr(s, 3));
+
+    // Convert message (hash) to buffer manually, avoiding the buggy ensureBuffer
+    const msgBuff = utils.leInt2Buff(msg, 32);
+    
+    const rBuff = createBlakeHash("blake512").update(Buffer.concat([h1.slice(32,64), msgBuff])).digest();
+    let r = utils.leBuff2int(rBuff);
+    const Fr = new F1Field(babyJub.subOrder);
+    r = Fr.e(r);
+    const R8 = babyJub.mulPointEscalar(babyJub.Base8, r);
+    // Use instance poseidon
+    const hm = this.poseidon([R8[0], R8[1], A[0], A[1], msg]);
+    const S = Fr.add(r , Fr.mul(hm, s));
+    return {
+        R8: R8,
+        S: S
+    };
+  }
+
 
   public async signAttestation(
       protocol: string, 
@@ -85,7 +152,6 @@ export class SignerService {
       subject: string, 
       summaryValue: number
   ): Promise<string> {
-      await this.initialized;
       
       const policyId = this.mapProtocolToId(protocol);
       const userAddrBigInt = BigInt(subject);
@@ -98,55 +164,32 @@ export class SignerService {
       ];
 
       console.log('[Signer] Signing inputs:', inputs.map(i => i.toString()));
-      console.log('[Signer] Eddsa keys:', Object.keys(this.eddsa));
 
       // Ensure private key is Uint8Array and exactly 32 bytes
       const prvKey = new Uint8Array(32);
       prvKey.set(this.privateKey);
 
-      // Debug Poseidon
-      try {
-        const testHash = this.poseidon(inputs);
-        console.log('[Signer] Poseidon hash success:', this.poseidon.F.toString(testHash));
-      } catch (e) {
-        console.error('[Signer] Poseidon hash failed:', e);
-      }
+      // 1. Hash with Poseidon
+      const hash = this.poseidon(inputs);
+      console.log('[Signer] Poseidon hash calculated');
 
-      // Fallback to signPoseidon if sign is missing, or try to find sign
-      let signature;
-      if (typeof this.eddsa.sign === 'function') {
-          const hash = this.poseidon(inputs);
-          signature = this.eddsa.sign(prvKey, hash);
-      } else {
-          console.log('[Signer] this.eddsa.sign not found, using signPoseidon');
-          signature = this.eddsa.signPoseidon(prvKey, inputs);
-      }
+      // 2. Sign the Hash (Manual Implementation)
+      const hashBigInt = BigInt(hash.toString());
+      const signature = this.signPoseidonManual(prvKey, hashBigInt);
       
-      const F = this.eddsa.F;
-      const r8x = F.toObject(signature.R8[0]); // Uint8Array(32)
-      const r8y = F.toObject(signature.R8[1]);
-      const s = signature.S; // bigint
-
-      const toHex = (n: Uint8Array) => Buffer.from(n).toString('hex').padStart(64, '0');
-      
-      const r8xHex = toHex(r8x);
-      const r8yHex = toHex(r8y);
-      let sHex = s.toString(16).padStart(64, '0');
-      if (sHex.length % 2 !== 0) sHex = '0' + sHex;
-
-      return `0x${r8xHex}${r8yHex}${sHex}`;
+      // 3. Serialize to Hex for the client
+      const packed = this.eddsa.packSignature(signature);
+      return '0x' + packed.toString('hex');
   }
 
-  async signAttestationHash(hashDecimalString: string): Promise<string> {
-    // Deprecated or fallback
-    return this.signAttestation('aave_v3', 0, '0', 0); // Dummy
-  }
-  
   // Expose public key for the circuit
   async getPublicKey(): Promise<[string, string]> {
-      await this.initialized;
       const pubKey = this.eddsa.prv2pub(this.privateKey);
-      const F = this.eddsa.F;
+      
+      // Case-sensitivity! require('circomlibjs').babyjub (lowercase)
+      const babyJub = require('circomlibjs').babyjub;
+      const F = babyJub.F;
+
       return [
           F.toString(pubKey[0]), 
           F.toString(pubKey[1])

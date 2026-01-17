@@ -1,0 +1,8 @@
+
+> revocation-registry@1.0.0 dev
+> ts-node src/index.ts
+
+{"level":30,"time":1768685944302,"pid":37632,"hostname":"Archie","msg":"Server listening at http://0.0.0.0:3001"}
+Revocation Registry running on port 3001
+{"level":30,"time":1768685962834,"pid":37632,"hostname":"Archie","reqId":"req-1","req":{"method":"GET","url":"/revoked?attestationHash=0xd0d81170523a2248b686a8f8f65258e6f666fa7788f04e773fc92d86d7df86e1","hostname":"localhost:3001","remoteAddress":"127.0.0.1","remotePort":56654},"msg":"incoming request"}
+{"level":30,"time":1768685962841,"pid":37632,"hostname":"Archie","reqId":"req-1","res":{"statusCode":200},"responseTime":6.542150000110269,"msg":"request completed"}

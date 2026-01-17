@@ -1,0 +1,37 @@
+
+> notary-service@1.0.0 dev
+> ts-node src/index.ts
+
+[Signer] Using dummy private key (NOTARY_PRIVATE_KEY not set)
+[Signer] Private Key Length: 32
+[Signer] Using dummy private key (NOTARY_PRIVATE_KEY not set)
+[Signer] Private Key Length: 32
+{"level":30,"time":1768685945100,"pid":37633,"hostname":"Archie","msg":"Server listening at http://0.0.0.0:3000"}
+Notary Service running on port 3000
+Notary Public Key: [-5943615547755501875856216743757064407608962372400382794171679993380335293665, -4636353015041750984265120083977917323985789634267373380698336719080349347331]
+{"level":30,"time":1768685957267,"pid":37633,"hostname":"Archie","reqId":"req-1","req":{"method":"POST","url":"/attest","hostname":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":46542},"msg":"incoming request"}
+[Notary] Starting Aggregation...
+[Notary] Running real aggregation... {
+  version: '1.0',
+  subject: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
+  chainId: 1,
+  protocol: 'aave_v3',
+  window: { from: 1700000000, to: 1700086400 },
+  blockRange: { fromBlock: 18000000, toBlock: 18000050 }
+}
+[Notary] Aggregation Complete: {
+  dataHash: '0xdc5d2cb65d2ef21e0e346cb56e1495b9563869646f6c4f3939898d15fdaa201e',
+  liquidationCount: 0
+}
+[Notary] Computing Attestation Hash...
+[Notary] Attestation Hash: 9647386284450394104045469740586612017635932375206588343986208152172716577514
+[Notary] Signing...
+[Signer] Signing inputs: [
+  '1',
+  '1768772362',
+  '1238012972454248237435767387143779415173800484933',
+  '0'
+]
+[Signer] Poseidon hash calculated
+[Notary] Signed.
+{"level":30,"time":1768685962803,"pid":37633,"hostname":"Archie","reqId":"req-1","res":{"statusCode":200},"responseTime":5535.094442999922,"msg":"request completed"}
