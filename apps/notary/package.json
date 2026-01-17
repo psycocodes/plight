@@ -18,7 +18,7 @@
   "dependencies": {
     "@fastify/cors": "^9.0.1",
     "@noble/ed25519": "^1.7.3",
-    "aggregation-engine": "file:../../packages/aggregation-engine",
+    "aggregation-engine": "workspace:*",
     "big-integer": "^1.6.52",
     "blake-hash": "^2.0.0",
     "circomlibjs": "^0.0.8",
