@@ -9,6 +9,7 @@ import * as path from 'path';
 // Load .env from project root to get RPC URLs
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
+// Trigger deployment: fix cold start
 const server = fastify({ logger: true });
 
 // Register CORS
