@@ -24,6 +24,12 @@ app.get('/', async () => {
 
 // Vercel serverless function handler
 export default async function handler(req: any, res: any) {
-  await app.ready();
-  app.server.emit('request', req, res);
+  try {
+    await app.ready();
+    app.server.emit('request', req, res);
+  } catch (err) {
+    console.error('Notary Vercel Handler Error:', err);
+    res.statusCode = 500;
+    res.end('Internal Server Error: ' + String(err));
+  }
 }
